@@ -9,7 +9,22 @@ import resetIcon from '../assets/reset.svg';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '../styles.css';
+import ErrorBar from './ErrorBar';
 
+const getWebSocketStateDescription = (readyState) => {
+  switch (readyState) {
+    case WebSocket.CONNECTING:
+      return 'CONNECTING';
+    case WebSocket.OPEN:
+      return 'OPEN';
+    case WebSocket.CLOSING:
+      return 'CLOSING';
+    case WebSocket.CLOSED:
+      return 'CLOSED';
+    default:
+      return 'UNKNOWN';
+  }
+};
 
 const MarketDataGrid = () => {
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -17,6 +32,7 @@ const MarketDataGrid = () => {
   const [columnDefs, setColumnDefs] = useState([]);  
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
   const [throttleValue, setThrottleValue] = useState(`${process.env.REACT_APP_THROTTLE_INTERVAL_DEFAULT}`);
   const gridApiRef = useRef(null);
   const socketRef = useRef(null);
@@ -35,7 +51,16 @@ const MarketDataGrid = () => {
     connectionStatus: 'OFF',
     subscriptionStatus: 'OFF'
   });
-  
+
+  const handleErrorClose = () => setErrorMessage('');
+
+  const showError = useCallback((message) => {
+    setErrorMessage(message);
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 3000);
+  }, []);
+
   // function to merge websocket data updates
   const mergeUpdates = useCallback((currentData, updates) => {
     const dataMap = new Map(currentData.map(item => [item.Id, { ...item }]));
@@ -118,7 +143,7 @@ const MarketDataGrid = () => {
   };
   
   // websocket setup function
-  const setupWebSocket = () => {
+  const setupWebSocket = useCallback(() => {
     console.log('Setting up WebSocket');
     const socket = new WebSocket(`${process.env.REACT_APP_WS_API_URL}`);
     socketRef.current = socket;
@@ -183,13 +208,15 @@ const MarketDataGrid = () => {
           }                  
           throttledSetRowData.current(data);
         }
-      } catch (error) {
+      } catch (error) {                
         console.error('Error processing WebSocket message:', error);
+        showError(`Error processing WebSocket message: ${JSON.stringify(error)}`);
       }
     };
 
-    socket.onclose = (event) => {
+    socket.onclose = (event) => {            
       console.log('WebSocket connection closed:', event);
+      showError(`WebSocket connection closed`);
       setStatusInfo(prevState => ({
         ...prevState,
         connectionStatus: 'OFF',
@@ -197,15 +224,16 @@ const MarketDataGrid = () => {
       }));
     };
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
+    socket.onerror = (error) => {                       
+      console.error('WebSocket connection error:', error);
+      showError(`WebSocket connection error`);
       setStatusInfo(prevState => ({
         ...prevState,
         connectionStatus: 'OFF',
         subscriptionStatus: 'OFF'
       }));
     };
-  };
+  }, [showError]);
 
   useEffect(() => {
     if (!setupCompleteRef.current) {
@@ -222,7 +250,7 @@ const MarketDataGrid = () => {
         currentThrottledSetRowData.cancel();
       }
     };
-  }, [throttledSetRowData]);
+  }, [setupWebSocket, throttledSetRowData]);
 
   const getRowId = (params) => params.data.Id;  
 
@@ -247,35 +275,59 @@ const MarketDataGrid = () => {
   };
 
   // start button logic (send subscribe request to the server for the currently selected items)
-  const handleStart = () => {
-    if (socketRef.current && selected.length > 0) {
-      const productIds = selected.map(option => option.value);      
+  const handleStart = () => {    
+    // Check if anything selected
+    if (selected.length === 0) {      
+      showError('No items selected. Please select at least one item to subscribe.');
+      return;
+    }
+
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const productIds = selected.map(option => option.value);
       const message = JSON.stringify({ type: 'subscribe', product_ids: productIds });
       console.log('Sending subscribe request for product_ids: ' + productIds.length);
-      
+    
       socketRef.current.send(message);
       setStatusInfo(prevState => ({
         ...prevState,        
-        subscriptionStatus:'ON',
+        subscriptionStatus: 'ON',
         subscribedTickers: productIds.length
+      }));
+    } else {        
+      showError(`WebSocket is not open. ReadyState: ${getWebSocketStateDescription(socketRef.current.readyState)}`);
+      setStatusInfo(prevState => ({
+        ...prevState,        
+        subscriptionStatus: 'OFF'
       }));
     }
   };
 
   // stop button logic (send un-subscribe request to the server for the currently selected items)
   const handleStop = () => {
-    if (socketRef.current) {
-      const productIds = selected.map(option => option.value);      
+    // Check if anything selected    
+    if (selected.length === 0) {
+      showError('No items selected. Please select at least one already subscribed item to un-subscribe.');
+      return;
+    }
+    
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const productIds = selected.map(option => option.value);
       const message = JSON.stringify({ type: 'unsubscribe', product_ids: productIds });
       console.log('Sending un-subscribe request for product_ids: ' + productIds.length);
-      
+    
       socketRef.current.send(message);
       setStatusInfo(prevState => ({
         ...prevState,        
         subscriptionStatus:'OFF',
         subscribedTickers: 0
       }));
-    }
+    } else {
+      showError(`WebSocket is not open. ReadyState: ${getWebSocketStateDescription(socketRef.current.readyState)}`);
+      setStatusInfo(prevState => ({
+        ...prevState,        
+        subscriptionStatus: 'OFF'
+      }));
+    }    
   };
 
   // reset button logic (close current websocket connection, clear the data grid and dropdown, re-establish websocket connection with latest product_ids populated in the dropdown)
@@ -360,6 +412,7 @@ const MarketDataGrid = () => {
           subscriptionStatus={statusInfo.subscriptionStatus}
         />
       </div>
+      <ErrorBar message={errorMessage} onClose={handleErrorClose} />
     </div>
   );
 };
