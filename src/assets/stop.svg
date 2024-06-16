@@ -1,0 +1,4 @@
+<svg id="playButton2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="feather feather-play">
+  <rect x="0" y="0" width="24" height="24" fill="white"/>
+  <rect x="2" y="2" width="20" height="20" fill="#ff9999" stroke="none"/>
+</svg>

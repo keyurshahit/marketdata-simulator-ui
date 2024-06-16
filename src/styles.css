@@ -1,0 +1,130 @@
+/* styles.css */
+h1 {
+    margin-left: 10px;
+    color: #888;
+}
+
+.grid-container {
+    height: calc(83vh - 25px);
+    width: calc(100% - 20px);
+    overflow: auto;
+    flex-grow: 1;
+    margin-left: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+}
+
+.status-bar {
+    width: calc(100% - 20px);
+    height: 25px;
+    margin-top: 1px;
+    margin-left: 10px;
+    margin-right: 10px;
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;   
+    justify-content: space-between;     
+}
+
+.status-item {
+    margin-left: 5px; /* Maintain spacing between items */
+    margin-right: 5px;
+    color: #555;
+    font-size: 12px; /* Adjust font size for the reduced bar height */
+    font-weight: bold;
+}
+
+.status-label {
+    color: #888;
+    font-weight: normal;
+    margin-right: 5px; /* Increase right margin for last item */
+    width: 150px; /* Fixed width for status items */
+    text-align: left; /* Align text to the left */
+}
+
+.inactive-row {
+    color: #d3d3d3;
+  }
+
+.multi-select-container {  
+  max-width: 100%;
+  width: calc(100% - 165px);
+  display: flex;
+}
+
+.multi-select {    
+  max-width: 100%;
+  width: calc(100% - 165px);
+  white-space: nowrap;
+}
+
+.multi-select .dropdown-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.multi-select .selected {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+    
+.controls {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 0 10px; /* Add padding to match the grid container */
+  box-sizing: border-box;
+}
+  
+.control-button {
+  height: 40px; /* Ensure the height matches the dropdown */
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.start-button {
+    background-color: #eeeff5;
+  }
+
+.start-button:hover {
+  background-color: #66bb6a;
+  box-shadow: 5px 5px 5px rgba(102, 187, 106, 0.5);
+}
+  
+.stop-button {
+    background-color: #eeeff5;
+  }
+
+.stop-button:hover {
+  background-color: #ed3330;
+  box-shadow: 5px 5px 5px rgba(243, 102, 100, 0.5);
+}
+
+.reset-button {
+  background-color: #eeeff5;
+}
+
+.reset-button:hover {
+background-color: #b1a4d7;
+box-shadow: 5px 5px 5px rgba(243, 102, 100, 0.5);
+}
+
+.control-button img {
+  margin-right: 5px;
+  width: 20px;
+  height: 20px;
+}
+
+.ag-theme-alpine {
+  --ag-value-change-value-highlight-background-color: lightyellow;
+  --ag-value-change-value-highlight-border-color: yellow;
+}
