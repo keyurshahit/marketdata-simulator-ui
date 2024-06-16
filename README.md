@@ -1,4 +1,5 @@
 # React Client App For Streaming/Real-Time Data Interface
+${\color{red}Tested \space with \space refresh \space rate \space as \space low \space as \space 50 ms \space with \space more \space than \space 20k \space rows}$
 
 ## This app consists of a single screen with the following three parts
 
