@@ -28,7 +28,7 @@ ${\color{red}Tested \space with \space refresh \space rate \space as \space low 
 
 ## Code Structure
 
-- src/components => App components (MarketDataGrid and StatusBar)
+- src/components => App components (MarketDataGrid, StatusBar, ErrorBar)
 - src/assets => images/svg files
 - styles.css => app wide styles
 - .env => app wide configuration values
